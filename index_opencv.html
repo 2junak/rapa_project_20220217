@@ -95,15 +95,21 @@
 &emsp; 
 <br/>
 <!-- <textarea class="hideDontTakeUpSpace" id="messageTextArea" rows="15" cols="50"></textarea> -->
-<textarea id="messageTextArea" rows="5" cols="50"></textarea>
- 
+<textarea id="messageTextArea" rows="15" cols="50"></textarea>
+<!-- <div class='gap'></div>-->
+<!-- <div id="container">
+    <video autoplay="true" id="videoElement">
+    
+    </video>
+</div>   -->
+
+
 <br/>
-<div style="float: left">
-    <!-- 204*4, 240*4 -->
-    <canvas style="border: 1px solid black" id="canvasforvideo" width="480" height="640">
-    </canvas>
-</div>
+<video id="video"></video>
 <br/>
+
+
+
 <label id="constatus">  </label> 
 <br/>
 <input onclick="connect()" value="Connect" type="button">
@@ -131,7 +137,6 @@
     var webSocket = new WebSocket(uri);
     const canvas_resolution_width = 310
     const canvas_resolution_height = 600
-    var img = new Image();
     // let pre_gX=0;
     // let pre_gY=0;
     // 소켓 접속이 되면 호출되는 함수
@@ -151,7 +156,7 @@
     // 소켓 서버로 부터 메시지가 오면 호출되는 함수.
     webSocket.onmessage = function(message){
       // 출력 area에 메시지를 표시한다.
-        // messageTextArea.value += "Recieve From Server => "+message.data+"\n";
+        messageTextArea.value += "Recieve From Server => "+message.data+"\n";
         let parsed_result = jsonfuncimage(message.data);
         
         // let gX = xy.x;
@@ -191,7 +196,7 @@
         //     gY  = xymin;
         
 
-         let ctx;
+        // let ctx;
         // const restNum = 10;
         // // messageTextArea.value += "before gX => "+ gX +", before gY=> "+ gY +"\n";
         // // gX = Math.round((gX*81.6)-10)
@@ -199,42 +204,50 @@
         // messageTextArea.value += "gX => "+ gX +", gY=> "+ gY +"\n";
         if(parsed_result.datatype == "image")
         {
-            const canvas = document.getElementById("canvas");            
-            ctx = canvas.getContext("2d");
-
-
-
+            const canvas = document.getElementById("canvas");
             canvas.width = parsed_result.shape[0]
             canvas.height = parsed_result.shape[1]
-            messageTextArea.value += "shape_w :" + canvas.width + " shape_h : " + canvas.height
-            
             // if (canvas.getContext && (pre_gX != gX || pre_gY != gY) && (gX % restNum == 0|| gY % restNum == 0)) {
-            if (canvas.getContext) {
-                
-                $().ready (function(){ 
-                
-                //console.log(str);
-                // img.src = "data:image/jpg;base64," + window.atob(parsed_result.content);
-                img.src = "data:image/jpg;base64, " +parsed_result.content;
-                // img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oMCRUiMrIBQVkAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAADElEQVQI12NgoC4AAABQAAEiE+h1AAAAAElFTkSuQmCC";
-                // img.src = "./green.jpeg"
-                // img.src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
-                img.onload = function () {
-                    ctx.drawImage(img,10,10);
-                    };
-
-                });
-            };
+            // if (canvas.getContext) {
+            //     var img = new Image();
+            //     //console.log(str);
+            //     // img.src = "data:image/png;base64," + window.btoa(parsed_result.content);
+            //     img.src = "data:image/jpg;base64," +parsed_result.content;
+            //     img.onload = function () {
+            //         ctx.drawImage(img,0,0);
+            //         };
+            // };
             // pre_gX = gX;
             // pre_gY = gY;
             // src = new cv.Mat(canvas.height, canvas.width, cv.CV_8UC4);
             // src = parsed_result.content
             // cv.imshow('canvas', src);
+
+            // let width, height;
+
+ 
+
+        const constraints = {
+            video: { facingMode: "user", }, audio: false
+        };
+        
+        function successCallback(stream) {
+            video.width = parsed_result.shape[0]; video.height = parsed_result.shape[1];//prevent Opencv.js error.
+            // video.srcObject = parsed_result.content;
+            // video.src = parsed_result.content;
+            video.stream = parsed_result.content;
+              
+            video.play();
         }
+
+        function errorCallback(error) {
+            console.log(error);
+        }
+       
  
- 
-        
-        
+        navigator.getUserMedia(constraints, successCallback, errorCallback);
+   
+      }
     }  
     //mouse event below
     // function printMousePos(event) {
@@ -289,7 +302,7 @@
     function connect(){
         if (webSocket.readyState === WebSocket.CLOSED) {
             
-            ws2 = new WebSocket(uri);
+            ws2 = new WebSocket("ws://localhost:9998");
             ws2.onopen=webSocket.onopen;
             ws2.onmessage = webSocket.onmessage;
             ws2.onclose = webSocket.onclose;
@@ -381,7 +394,7 @@
     function jsonfuncimage( jsondata ) {
         // console.log(typeof(jsonText))
         console.log(jsondata)
-        // messageTextArea.value += "jsonText=> "+jsondata+"\n";
+        messageTextArea.value += "jsonText=> "+jsondata+"\n";
         // let jload = JSON.loads(jsonText)
         // messageTextArea.value += "jload=> "+jload+"\n";
         // jsonText = jsonText.replace(/^\s+|\s+$/g, "");
@@ -395,9 +408,9 @@
         // let json = JSON.parse(JSON.stringify(jsonText)); // String -> json으로 변환
         // let json = jsonText;
         
-        // messageTextArea.value += "json.datatype=> "+json.datatype+"\n";
-        // messageTextArea.value += "json.content=> "+json.content+"\n";
-        // messageTextArea.value += "json.shape=> "+json.shape+"\n";
+        messageTextArea.value += "json.datatype=> "+json.datatype+"\n";
+        messageTextArea.value += "json.content=> "+json.content+"\n";
+        messageTextArea.value += "json.shape=> "+json.shape+"\n";
         // gX = json.xNowPose;
         // gX = json.yNowPose;
 
@@ -485,7 +498,7 @@
         img.onload = function () {
             ctx.drawImage(img, 0, 0, canvas_resolution_width, canvas_resolution_height)
         }
-        img.src = 'image/map_rect_310_600.png';
+        img.src = 'map_rect_310_600.png';
     }
 
 // below distionation related code 
@@ -498,7 +511,7 @@
             //ctx.fillRect(x, y, 20, 20);
 
             let img = new Image();
-            img.src = 'image/point.png';
+            img.src = 'point.png';
             img.onload = function () {
                 ctx.drawImage(img, x, y, 24, 24);
             }
@@ -523,7 +536,7 @@
                 // drawPoint(y, x);
             }
         }
-        img.src = 'image/map_rect_310_600.png';
+        img.src = 'map_rect_310_600.png';
     }
 
     

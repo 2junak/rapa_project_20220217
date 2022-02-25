@@ -95,15 +95,21 @@
 &emsp; 
 <br/>
 <!-- <textarea class="hideDontTakeUpSpace" id="messageTextArea" rows="15" cols="50"></textarea> -->
-<textarea id="messageTextArea" rows="5" cols="50"></textarea>
- 
+<textarea id="messageTextArea" rows="15" cols="50"></textarea>
+<!-- <div class='gap'></div>-->
+<!-- <div id="container">
+    <video autoplay="true" id="videoElement">
+    
+    </video>
+</div>   -->
+
+
 <br/>
-<div style="float: left">
-    <!-- 204*4, 240*4 -->
-    <canvas style="border: 1px solid black" id="canvasforvideo" width="480" height="640">
-    </canvas>
-</div>
+<video id="video"></video>
 <br/>
+
+
+
 <label id="constatus">  </label> 
 <br/>
 <input onclick="connect()" value="Connect" type="button">
@@ -206,7 +212,6 @@
 
             canvas.width = parsed_result.shape[0]
             canvas.height = parsed_result.shape[1]
-            messageTextArea.value += "shape_w :" + canvas.width + " shape_h : " + canvas.height
             
             // if (canvas.getContext && (pre_gX != gX || pre_gY != gY) && (gX % restNum == 0|| gY % restNum == 0)) {
             if (canvas.getContext) {
@@ -485,7 +490,7 @@
         img.onload = function () {
             ctx.drawImage(img, 0, 0, canvas_resolution_width, canvas_resolution_height)
         }
-        img.src = 'image/map_rect_310_600.png';
+        img.src = 'map_rect_310_600.png';
     }
 
 // below distionation related code 
@@ -498,7 +503,7 @@
             //ctx.fillRect(x, y, 20, 20);
 
             let img = new Image();
-            img.src = 'image/point.png';
+            img.src = 'point.png';
             img.onload = function () {
                 ctx.drawImage(img, x, y, 24, 24);
             }
@@ -523,7 +528,7 @@
                 // drawPoint(y, x);
             }
         }
-        img.src = 'image/map_rect_310_600.png';
+        img.src = 'map_rect_310_600.png';
     }
 
     

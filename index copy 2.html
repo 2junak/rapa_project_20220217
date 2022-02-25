@@ -4,36 +4,9 @@
     <meta charset="utf-8"/>
     <title>Canvas</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-    <script async src="https://docs.opencv.org/3.4/opencv.js"></script>
-
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <style type="text/css">
-        #container {
-            margin: 0px auto;
-            width: 500px;
-            height: 375px;
-            border: 10px #333 solid;
-        }
-        #videoElement {
-            width: 500px;
-            height: 375px;
-            background-color: #666;
-        } 
-        .hideButTakeUpSpace
-        {
-            /* visibility: hidden; */
-            visibility: none;
-        }
-
-        .hideDontTakeUpSpace
-        {
-            display:none;
-        }
-        /* .gap{width:200px;background:none;height:110px;display:inline-block;} */
-
     </style>
 </head>
 <body>
@@ -41,7 +14,7 @@
 <div style="margin: 30px">
     <div style="float: left">
         <!-- 204*4, 240*4 -->
-        <canvas style="border: 1px solid black" id="canvas" width="310" height="600">
+        <canvas style="border: 1px solid black" id="canvas" width="252" height="504">
         </canvas>
     </div>
 
@@ -94,15 +67,7 @@
 <!-- 출력 area -->
 &emsp; 
 <br/>
-<!-- <textarea class="hideDontTakeUpSpace" id="messageTextArea" rows="15" cols="50"></textarea> -->
-<textarea id="messageTextArea" rows="5" cols="50"></textarea>
- 
-<br/>
-<div style="float: left">
-    <!-- 204*4, 240*4 -->
-    <canvas style="border: 1px solid black" id="canvasforvideo" width="480" height="640">
-    </canvas>
-</div>
+<textarea id="messageTextArea" rows="15" cols="50"></textarea>
 <br/>
 <label id="constatus">  </label> 
 <br/>
@@ -113,25 +78,10 @@
 
 
 <script type="text/javascript">
-
-// var video = document.querySelector("#videoElement");
- 
-// if (navigator.mediaDevices.getUserMedia) {
-//   navigator.mediaDevices.getUserMedia({ video: true })
-//     .then(function (stream) {
-//       video.srcObject = stream;
-//     })
-//     .catch(function (err0r) {
-//       console.log("Something went wrong!");
-//     });
-// }  //video
-
-    const video = document.getElementById("video");
-    const uri = "ws://localhost:9999"
+    const uri = "ws://localhost:9998"
     var webSocket = new WebSocket(uri);
-    const canvas_resolution_width = 310
-    const canvas_resolution_height = 600
-    var img = new Image();
+    const canvas_resolution_width = 252
+    const canvas_resolution_height = 504
     // let pre_gX=0;
     // let pre_gY=0;
     // 소켓 접속이 되면 호출되는 함수
@@ -151,126 +101,67 @@
     // 소켓 서버로 부터 메시지가 오면 호출되는 함수.
     webSocket.onmessage = function(message){
       // 출력 area에 메시지를 표시한다.
-        // messageTextArea.value += "Recieve From Server => "+message.data+"\n";
-        let parsed_result = jsonfuncimage(message.data);
+        messageTextArea.value += "Recieve From Server => "+message.data+"\n";
+        let xy = jsonfunc(message.data);
         
-        // let gX = xy.x;
-        // let gY = xy.y;
+        let gX = xy.x;
+        let gY = xy.y;
 
-        // // gX = gX* 2.52;//for test
-        // // gY= gY * 5.04;//for test
+        gX = gX* 2.52;
+        gY= gY * 5.04;
 
-        // // const amount=5
+        // const amount=5
+        const xmax = 238
+        const ymax = 489
+        const xymin = 5
+        if(gX>xmax)
+            gX  = xmax;
+        else if(gX <xymin)
+            gX  = xymin;
 
-        // // x = valueX*3.1/100;// for sending
-        // // y = valueY*6/100; //for sending
-        
-        // // gX = gX*100/3.1; // for receiving
-        // // gY = gY*100/6; //for receiving
-        // gX = gX*100; // for receiving
-        // gY = gY*100; //for receiving
-        // let temp=0;
-        // temp = gX
-        // gX = gY
-        // gY = temp
-
-         
-
-
-        // const xmax = 305
-        // const ymax = 595
-        // const xymin = 5
-        // if(gX>xmax)
-        //     gX  = xmax;
-        // else if(gX <xymin)
-        //     gX  = xymin;
-
-        // if(gY>ymax)
-        //     gY  = ymax;
-        // else if(gY <xymin)
-        //     gY  = xymin;
+        if(gY>ymax)
+            gY  = ymax;
+        else if(gY <xymin)
+            gY  = xymin;
         
 
-         let ctx;
-        // const restNum = 10;
-        // // messageTextArea.value += "before gX => "+ gX +", before gY=> "+ gY +"\n";
-        // // gX = Math.round((gX*81.6)-10)
-        // // gY = Math.round((gY*96)-10)
-        // messageTextArea.value += "gX => "+ gX +", gY=> "+ gY +"\n";
-        if(parsed_result.datatype == "image")
-        {
-            const canvas = document.getElementById("canvas");            
+        let ctx;
+        const restNum = 10;
+        // messageTextArea.value += "before gX => "+ gX +", before gY=> "+ gY +"\n";
+        // gX = Math.round((gX*81.6)-10)
+        // gY = Math.round((gY*96)-10)
+        messageTextArea.value += "gX => "+ gX +", gY=> "+ gY +"\n";
+        const canvas = document.getElementById("canvas");
+        // if (canvas.getContext && (pre_gX != gX || pre_gY != gY) && (gX % restNum == 0|| gY % restNum == 0)) {
+        if (canvas.getContext) {
             ctx = canvas.getContext("2d");
-
-
-
-            canvas.width = parsed_result.shape[0]
-            canvas.height = parsed_result.shape[1]
-            messageTextArea.value += "shape_w :" + canvas.width + " shape_h : " + canvas.height
-            
-            // if (canvas.getContext && (pre_gX != gX || pre_gY != gY) && (gX % restNum == 0|| gY % restNum == 0)) {
-            if (canvas.getContext) {
-                
-                $().ready (function(){ 
-                
-                //console.log(str);
-                // img.src = "data:image/jpg;base64," + window.atob(parsed_result.content);
-                img.src = "data:image/jpg;base64, " +parsed_result.content;
-                // img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oMCRUiMrIBQVkAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAADElEQVQI12NgoC4AAABQAAEiE+h1AAAAAElFTkSuQmCC";
-                // img.src = "./green.jpeg"
-                // img.src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
-                img.onload = function () {
-                    ctx.drawImage(img,10,10);
-                    };
-
-                });
-            };
-            // pre_gX = gX;
-            // pre_gY = gY;
-            // src = new cv.Mat(canvas.height, canvas.width, cv.CV_8UC4);
-            // src = parsed_result.content
-            // cv.imshow('canvas', src);
+            ctx.fillStyle = "rgb(178,34,34)";
+            ctx.fillRect(gX,gY, 10, 10);
+            // ctx.fillRect(gY,gX, 10, 10);
         }
- 
- 
-        
-        
-    }  
+        // pre_gX = gX;
+        // pre_gY = gY;
+   
+    };
+
     //mouse event below
-    // function printMousePos(event) {
-    // messageTextArea.value +=
-    // "clientX: " + event.clientX +
-    // " - clientY: " + event.clientY+"\n";
-    // }
-    // document.addEventListener("click", printMousePos);
+    function printMousePos(event) {
+    messageTextArea.value +=
+    "clientX: " + event.clientX +
+    " - clientY: " + event.clientY+"\n";
+    }
+    document.addEventListener("click", printMousePos);
 
     function getCursorPosition(canvas, event) {
     const rect = canvas.getBoundingClientRect()
-    let x = event.clientX - rect.left
-    let y = event.clientY - rect.top
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
     console.log("x: " + x + " y: " + y)
     messageTextArea.value +=
     "canvasX: " + x +
     " - canvasY: " + y+"\n";
     $('#destination_x').val(100*x/canvas_resolution_width)
     $('#destination_y').val(100*y/canvas_resolution_height)
-
-    x =x-10;
-    y = y-10
-    
-    // x = x * 3.1;
-    // y = y * 6;
-
-    // x = x - 10;
-    // y = y - 10;
-    // // x = x - 5;
-    // // y = y - 5;
-
-    drawMap(x, y);
-
-
-
-
     }
 
     const canvas = document.querySelector('canvas')
@@ -289,7 +180,7 @@
     function connect(){
         if (webSocket.readyState === WebSocket.CLOSED) {
             
-            ws2 = new WebSocket(uri);
+            ws2 = new WebSocket("ws://localhost:9998");
             ws2.onopen=webSocket.onopen;
             ws2.onmessage = webSocket.onmessage;
             ws2.onclose = webSocket.onclose;
@@ -353,8 +244,8 @@
         // let json = JSON.parse(JSON.stringify(jsonText)); // String -> json으로 변환
         // let json = jsonText;
         
-        messageTextArea.value += "json.xNowPose=> "+json.xNowPose+"\n";
-        messageTextArea.value += "json.yNowPose=> "+json.yNowPose+"\n";
+        messageTextArea.value += "json.xNowPose=> "+json[0].xNowPose+"\n";
+        messageTextArea.value += "json.yNowPose=> "+json[0].yNowPose+"\n";
         // gX = json.xNowPose;
         // gX = json.yNowPose;
 
@@ -373,54 +264,11 @@
         // messageTextArea.value += "json parse => "+txt+"\n";
 
             return {
-            x: json.xNowPose,
-            y: json.yNowPose
+            x: json[0].xNowPose,
+            y: json[0].yNowPose
         };
     }
 
-    function jsonfuncimage( jsondata ) {
-        // console.log(typeof(jsonText))
-        console.log(jsondata)
-        // messageTextArea.value += "jsonText=> "+jsondata+"\n";
-        // let jload = JSON.loads(jsonText)
-        // messageTextArea.value += "jload=> "+jload+"\n";
-        // jsonText = jsonText.replace(/^\s+|\s+$/g, "");
-
-        // jsonText = "'"+jsonText+"'";
-        // console.log(jsonText)
-        // jsonText = stringToJson(jsonText);
-        // console.log("-----------------------");
-        // console.log(jsonText);
-        let json = jQuery.parseJSON(jsondata); // String -> json으로 변환
-        // let json = JSON.parse(JSON.stringify(jsonText)); // String -> json으로 변환
-        // let json = jsonText;
-        
-        // messageTextArea.value += "json.datatype=> "+json.datatype+"\n";
-        // messageTextArea.value += "json.content=> "+json.content+"\n";
-        // messageTextArea.value += "json.shape=> "+json.shape+"\n";
-        // gX = json.xNowPose;
-        // gX = json.yNowPose;
-
-        // let txt = "";
-        // // 접근법 1
-        // messageTextArea.value += "json.length=> "+json.length+"\n";
-        // for(i=0; i<json.length; i++){
-           
-        //     for(key in json[i]){ // key값 가져오기
-        //         txt += key + ":" + json[i][key];
-        //         messageTextArea.value += "key=> "+key+" ,json[i][key]=> "+json[i][key]+"\n"; 
-        //     }
-        //     txt += "<br>";
-        // } 
-        // // document.getElementById('demo').innerHTML = txt;
-        // messageTextArea.value += "json parse => "+txt+"\n";
-
-            return {
-            datatype: json.datatype,
-            content: json.content,
-            shape : json.shape
-        };
-    }
 
     $(function () {
         draw();
@@ -483,9 +331,9 @@
 
         let img = new Image();
         img.onload = function () {
-            ctx.drawImage(img, 0, 0, canvas_resolution_width, canvas_resolution_height)
+            ctx.drawImage(img, 0, 0, 252, 504)
         }
-        img.src = 'image/map_rect_310_600.png';
+        img.src = 'map_rect.png';
     }
 
 // below distionation related code 
@@ -498,7 +346,7 @@
             //ctx.fillRect(x, y, 20, 20);
 
             let img = new Image();
-            img.src = 'image/point.png';
+            img.src = 'point.png';
             img.onload = function () {
                 ctx.drawImage(img, x, y, 24, 24);
             }
@@ -516,70 +364,34 @@
 
         let img = new Image();
         img.onload = function () {
-            ctx.drawImage(img, 0, 0, canvas_resolution_width, canvas_resolution_height);
+            ctx.drawImage(img, 0, 0, 252, 504);
 
             if (x !== -1 && y !== -1) {
                 drawPoint(x, y);
                 // drawPoint(y, x);
             }
         }
-        img.src = 'image/map_rect_310_600.png';
+        img.src = 'map_rect.png';
     }
 
     
     $('#apply_clear').click(() => {
         $('#destination_x').val(0);
         $('#destination_y').val(0);
-        // x = x * 3.1;
-        // y = y * 6;
-
-        // x = x - 10;
-        // y = y - 10;
-        // // x = x - 5;
-        // // y = y - 5;
-
-        const x = 0;
-        const y = 0;
-
-        drawMap(x, y);
+        // draw();
         
     })
     $('#apply_goto100').click(() => {
         $('#destination_x').val(100);
-        $('#destination_y').val(100);       
-        // x = x * 3.1;
-        // y = y * 6;
-
-        // x = x - 10;
-        // y = y - 10;
-        // // x = x - 5;
-        // // y = y - 5;
-        const x = 310-10;
-        const y = 600-10;
-        
-
-        drawMap(x, y);
+        $('#destination_y').val(100);
+        // draw();
         
     })
    
     $('#apply_random').click(() => {
-        let x = Math.floor(Math.random() * 101);
-        let y = Math.floor(Math.random() * 101);
-        $('#destination_x').val(x);
-        $('#destination_y').val(y);
-
-        x =x*3.1-10;
-        y = y*6-10
-       
-        // x = x * 3.1;
-        // y = y * 6;
-
-        // x = x - 10;
-        // y = y - 10;
-        // // x = x - 5;
-        // // y = y - 5;
-
-        drawMap(x, y);
+        $('#destination_x').val(Math.floor(Math.random() * 101));
+        $('#destination_y').val(Math.floor(Math.random() * 101));
+        // draw();
         
     })
 
@@ -613,15 +425,15 @@
         }
 
         
-        // x = x * 3.1;
-        // y = y * 6;
+        x = x * 2.52;
+        y = y * 5.04;
 
-        // x = x - 10;
-        // y = y - 10;
-        // // x = x - 5;
-        // // y = y - 5;
+        x = x - 10;
+        y = y - 10;
+        // x = x - 5;
+        // y = y - 5;
 
-        // drawMap(x, y);
+        drawMap(x, y);
         // drawPoint(x, y);
 
         // x = (x + 10)/81.6;
@@ -636,22 +448,17 @@
         // float64[1] = y;
         // float64[0] = y;
         // float64[1] = x;
-        // messageTextArea.value += "Send to Server => "+"x : "+x+", y : "+y+"\n";
-        
+        messageTextArea.value += "Send to Server => "+"x : "+x+", y : "+y+"\n";
         //웹소켓으로 textMessage객체의 value을 보낸다.
         
         let webSockData = {
-            // xGoalPose: x,
-            // yGoalPose: y
+            xGoalPose: x,
+            yGoalPose: y
             // xGoalPose: y,
             // yGoalPose: x
-            datatype : "string",
-            content : "send me image"
         }
-        messageTextArea.value += "Send to Server => "+"datatype : "+webSockData.datatype+", content: "+webSockData.content+"\n";
         
         webSocket.send(JSON.stringify(webSockData));
-         
         
     })
     // pose_data = webSocket.recv()
